@@ -85,30 +85,55 @@ function MainApp() {
     setDate(date - dayUnicord);
   };
 
+  async function getTemp(){
+    try{
+      const temp = await axios.get('http://localhost:8080/api');
+      console.log(temp)
+    }catch(error){
+      console.error(error);
+    }
+  }
+
   async function getData(date) {
     const API_KEY = "56c117f5b9b44f6385bd8911d6ad8ebc"
     url = `https://api.football-data.org/v4/competitions/PL/matches?season=2022`;
     const headers = { "X-Auth-Token": API_KEY};
-    try {
-      const response = await axios.get(url, { headers: headers });
-      const total = response.data.matches
-      const PL = []
+    const temp = await axios.get('http://localhost:8080/api');
+    const total = temp.data
+    const PL = []
+    for(let i = 0; i < total.length; i++) {
+          PL.push({
+            date: new Date(total[i].Date).getTime(),
+            matchday: total[i].Matchday,
+            homeTeam: total[i].Home,
+            // homeTeamIco: total[i].homeTeam.crest,
+            awayTeam: total[i].Away,
+            // awayTeamIco: total[i].awayTeam.crest,
+            score: total[i].Score,
+          })
+        }
+        setMatches(PL)
 
-      for(let i = 0; i < total.length; i++) {
-        PL.push({
-          date: new Date(total[i].utcDate).getTime(),
-          matchday: total[i].matchday,
-          homeTeam: total[i].homeTeam.shortName,
-          homeTeamIco: total[i].homeTeam.crest,
-          awayTeam: total[i].awayTeam.shortName,
-          awayTeamIco: total[i].awayTeam.crest,
-          score: `${total[i].score.fullTime.home}:${total[i].score.fullTime.away}`,
-        })
-      }
-      setMatches(PL)
-    } catch (error) {
-      console.error(error);
-    }
+    // try {
+    //   const response = await axios.get(url, { headers: headers });
+    //   const total = response.data.matches
+    //   const PL = []
+
+    //   for(let i = 0; i < total.length; i++) {
+    //     PL.push({
+    //       date: new Date(total[i].utcDate).getTime(),
+    //       matchday: total[i].matchday,
+    //       homeTeam: total[i].homeTeam.shortName,
+    //       homeTeamIco: total[i].homeTeam.crest,
+    //       awayTeam: total[i].awayTeam.shortName,
+    //       awayTeamIco: total[i].awayTeam.crest,
+    //       score: `${total[i].score.fullTime.home}:${total[i].score.fullTime.away}`,
+    //     })
+    //   }
+    //   setMatches(PL)
+    // } catch (error) {
+    //   console.error(error);
+    // }
   }
 
   return (
@@ -116,6 +141,9 @@ function MainApp() {
       <View style={styles.header}>
         <View style={styles.headLogo}>
           <Text style={styles.title}>NS<Text style={{...styles.title,color:'white',fontSize:25}}>football</Text></Text>
+          <TouchableOpacity onPress={getTemp} style={{backgroundColor:'white'}}>
+            <Text>dddd</Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={()=>{
             if (scoreFlip === true) {
               setScoreFlip(false)
@@ -155,7 +183,7 @@ function MainApp() {
                   <View style={styles.matchHome}>
                     <Text style={styles.teamName}>
                       {i.homeTeam}  {
-                        i.homeTeamIco.endsWith('.svg') ? (<SvgUri width="20" height="20" uri={i.homeTeamIco} />) : (<Image source={{ uri: i.homeTeamIco }} style={styles.teamLogo} />)
+                        // i.homeTeamIco.endsWith('.svg') ? (<SvgUri width="20" height="20" uri={i.homeTeamIco} />) : (<Image source={{ uri: i.homeTeamIco }} style={styles.teamLogo} />)
                       }
                     </Text>
                   </View>
@@ -163,7 +191,7 @@ function MainApp() {
                   <View style={styles.matchAway}>
                     <Text style={styles.teamName}>
                       {
-                        i.awayTeamIco.endsWith('.svg') ? (<SvgUri width="20" height="20" uri={i.awayTeamIco} />) : (<Image source={{ uri: i.awayTeamIco }} style={styles.teamLogo} />)
+                        // i.awayTeamIco.endsWith('.svg') ? (<SvgUri width="20" height="20" uri={i.awayTeamIco} />) : (<Image source={{ uri: i.awayTeamIco }} style={styles.teamLogo} />)
                       } {i.awayTeam}
                     </Text>
                   </View>
