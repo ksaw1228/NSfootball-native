@@ -14,8 +14,6 @@ function MainApp() {
   const [flip, setFlip] = useState(true)
   const [scoreFlip, setScoreFlip] = useState(false)
 
-  
-
   const lastDragX = useRef(0);
 
   const onSwipeGesture = (event) => {
@@ -35,18 +33,6 @@ function MainApp() {
       lastDragX.current = 0;
     }
   };
-
-  useEffect(() => {
-    getData(getDate(date))
-  }, []);
-
-  useEffect(() => {
-    if (matches.filter((i) => getDate(i.date) === getDate(date)).length === 0) {
-      setFlip(false);
-    } else {
-      setFlip(true);
-    }
-  }, [matches, date]);
   
   function getDate(unixTime, showHour = false) {
     const date = new Date(unixTime);
@@ -107,6 +93,18 @@ function MainApp() {
       console.log(error)
     }
   }
+
+  useEffect(() => {
+    getData(getDate(date))
+  }, []);
+
+  useEffect(() => {
+    if (matches.filter((i) => getDate(i.date) === getDate(date)).length === 0) {
+      setFlip(false);
+    } else {
+      setFlip(true);
+    }
+  }, [matches, date]);
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "right", "left"]}>
@@ -196,7 +194,6 @@ const styles = StyleSheet.create({
     height: 100,
     borderBottomWidth: 1,
     borderBottomColor: '#4D4D4D',
-    // marginBottom:10
   },
   headLogo: {
     backgroundColor: '#1F1F1F',
