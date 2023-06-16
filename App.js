@@ -1,10 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect, useRef} from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView, Animated } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView} from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
-import axios from 'axios';
 import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SvgUri } from 'react-native-svg';
+import axios from 'axios';
 
 
 function MainApp() {
@@ -85,55 +85,27 @@ function MainApp() {
     setDate(date - dayUnicord);
   };
 
-  async function getTemp(){
+  async function getData() {
     try{
-      const temp = await axios.get('http://localhost:8080/api');
-      console.log(temp)
+      const temp = await axios.get('http://192.168.0.12:8080/api');
+      const total = temp.data
+      const PL = []
+      for(let i = 0; i < total.length; i++) {
+            PL.push({
+              id: total[i].id,
+              date: new Date(total[i].Date).getTime(),
+              matchday: total[i].Matchday,
+              homeTeam: total[i].Home,
+              homeTeamIco: total[i].HomeIco,
+              awayTeam: total[i].Away,
+              awayTeamIco: total[i].AwayIco,
+              score: total[i].Score,
+            })
+          }
+          setMatches(PL)
     }catch(error){
-      console.error(error);
+      console.log(error)
     }
-  }
-
-  async function getData(date) {
-    const API_KEY = "56c117f5b9b44f6385bd8911d6ad8ebc"
-    url = `https://api.football-data.org/v4/competitions/PL/matches?season=2022`;
-    const headers = { "X-Auth-Token": API_KEY};
-    const temp = await axios.get('http://localhost:8080/api');
-    const total = temp.data
-    const PL = []
-    for(let i = 0; i < total.length; i++) {
-          PL.push({
-            date: new Date(total[i].Date).getTime(),
-            matchday: total[i].Matchday,
-            homeTeam: total[i].Home,
-            // homeTeamIco: total[i].homeTeam.crest,
-            awayTeam: total[i].Away,
-            // awayTeamIco: total[i].awayTeam.crest,
-            score: total[i].Score,
-          })
-        }
-        setMatches(PL)
-
-    // try {
-    //   const response = await axios.get(url, { headers: headers });
-    //   const total = response.data.matches
-    //   const PL = []
-
-    //   for(let i = 0; i < total.length; i++) {
-    //     PL.push({
-    //       date: new Date(total[i].utcDate).getTime(),
-    //       matchday: total[i].matchday,
-    //       homeTeam: total[i].homeTeam.shortName,
-    //       homeTeamIco: total[i].homeTeam.crest,
-    //       awayTeam: total[i].awayTeam.shortName,
-    //       awayTeamIco: total[i].awayTeam.crest,
-    //       score: `${total[i].score.fullTime.home}:${total[i].score.fullTime.away}`,
-    //     })
-    //   }
-    //   setMatches(PL)
-    // } catch (error) {
-    //   console.error(error);
-    // }
   }
 
   return (
@@ -141,9 +113,6 @@ function MainApp() {
       <View style={styles.header}>
         <View style={styles.headLogo}>
           <Text style={styles.title}>NS<Text style={{...styles.title,color:'white',fontSize:25}}>football</Text></Text>
-          <TouchableOpacity onPress={getTemp} style={{backgroundColor:'white'}}>
-            <Text>dddd</Text>
-          </TouchableOpacity>
           <TouchableOpacity onPress={()=>{
             if (scoreFlip === true) {
               setScoreFlip(false)
@@ -173,7 +142,7 @@ function MainApp() {
         >
           <ScrollView style={styles.main}>
             {matches.filter((i) => getDate(i.date) === getDate(date)).map((i) => (
-              <TouchableOpacity key={i} style={styles.matchCard}>
+              <TouchableOpacity key={i.id} style={styles.matchCard}>
                 <View style={styles.matchTopView}>
                   <Text style={styles.matchTime}>
                     {getDate(i.date, true)}
@@ -183,7 +152,7 @@ function MainApp() {
                   <View style={styles.matchHome}>
                     <Text style={styles.teamName}>
                       {i.homeTeam}  {
-                        // i.homeTeamIco.endsWith('.svg') ? (<SvgUri width="20" height="20" uri={i.homeTeamIco} />) : (<Image source={{ uri: i.homeTeamIco }} style={styles.teamLogo} />)
+                        i.homeTeamIco.endsWith('.svg') ? (<SvgUri width="20" height="20" uri={i.homeTeamIco} />) : (<Image source={{ uri: i.homeTeamIco }} style={styles.teamLogo} />)
                       }
                     </Text>
                   </View>
@@ -191,7 +160,7 @@ function MainApp() {
                   <View style={styles.matchAway}>
                     <Text style={styles.teamName}>
                       {
-                        // i.awayTeamIco.endsWith('.svg') ? (<SvgUri width="20" height="20" uri={i.awayTeamIco} />) : (<Image source={{ uri: i.awayTeamIco }} style={styles.teamLogo} />)
+                        i.awayTeamIco.endsWith('.svg') ? (<SvgUri width="20" height="20" uri={i.awayTeamIco} />) : (<Image source={{ uri: i.awayTeamIco }} style={styles.teamLogo} />)
                       } {i.awayTeam}
                     </Text>
                   </View>
