@@ -9,29 +9,53 @@ import axios from 'axios';
 
 function MainApp() {
   const dayUnicord = 86400000
+  const plLogo = 'https://crests.football-data.org/PL.png'
+  const blLogo = 'https://crests.football-data.org/BL1.png'
+  const pdLogo = 'https://crests.football-data.org/PD.png'
+  const saLogo = 'https://crests.football-data.org/SA.png'
+  const fl1Logo = 'https://crests.football-data.org/FL1.png'
+
   const [date, setDate] = useState(new Date().getTime());
-  const [matches, setMatches] = useState([])
-  const [flip, setFlip] = useState(true)
+  const [pl, setPl] = useState([])
+  const [bl,setBl] = useState([])
+  const [fl1,setFl1] = useState([])
+  const [pd,setPd] = useState([])
+  const [sa,setSa] = useState([])
   const [scoreFlip, setScoreFlip] = useState(false)
+  const [swipeHandled, setSwipeHandled] = useState(false);
+
 
   const lastDragX = useRef(0);
 
   const onSwipeGesture = (event) => {
-    const {translationX} = event.nativeEvent;
+    const { translationX } = event.nativeEvent;
   
-    if (translationX - lastDragX.current > 100) {
-      onSwipeRight();
-      lastDragX.current = translationX;
-    } else if (translationX - lastDragX.current < -100) {
-      onSwipeLeft();
-      lastDragX.current = translationX;
+    if (!swipeHandled) {
+      if (translationX - lastDragX.current > 50) {
+        onSwipeRight();
+        lastDragX.current = translationX;
+        setSwipeHandled(true);
+      } else if (translationX - lastDragX.current < -50) {
+        onSwipeLeft();
+        lastDragX.current = translationX;
+        setSwipeHandled(true);
+      }
     }
   };
   
   const onSwipeGestureStateChange = (event) => {
     if (event.nativeEvent.oldState === 4) {
       lastDragX.current = 0;
+      setSwipeHandled(false);
     }
+  };
+
+  const onSwipeLeft = () => {
+    setDate(date + dayUnicord);
+  };
+
+  const onSwipeRight = () => {
+    setDate(date - dayUnicord);
   };
   
   function getDate(unixTime, showHour = false) {
@@ -63,32 +87,33 @@ function MainApp() {
     }
   }
 
-  const onSwipeLeft = () => {
-    setDate(date + dayUnicord);
-  };
 
-  const onSwipeRight = () => {
-    setDate(date - dayUnicord);
-  };
+  function addLeague(leagueName){
+    const arr = []
+    for(let i = 0; i < leagueName.length; i++) {
+      arr.push({
+        id: leagueName[i].id,
+        date: new Date(leagueName[i].Date).getTime(),
+        matchday: leagueName[i].Matchday,
+        homeTeam: leagueName[i].Home,
+        homeTeamIco: leagueName[i].HomeIco,
+        awayTeam: leagueName[i].Away,
+        awayTeamIco: leagueName[i].AwayIco,
+        score: leagueName[i].Score==='null:null' ? '? : ?' : leagueName[i].Score,
+      })
+    }
+    return arr
+  }
 
   async function getData() {
     try{
-      const temp = await axios.get('http://192.168.0.12:8080/api');
-      const total = temp.data
-      const PL = []
-      for(let i = 0; i < total.length; i++) {
-            PL.push({
-              id: total[i].id,
-              date: new Date(total[i].Date).getTime(),
-              matchday: total[i].Matchday,
-              homeTeam: total[i].Home,
-              homeTeamIco: total[i].HomeIco,
-              awayTeam: total[i].Away,
-              awayTeamIco: total[i].AwayIco,
-              score: total[i].Score,
-            })
-          }
-          setMatches(PL)
+      const response = await axios.get('http://192.168.0.12:8080/api/all');
+      const data = response.data
+      setPl(addLeague(data.PL))
+      setBl(addLeague(data.BL))
+      setFl1(addLeague(data.FL1))
+      setPd(addLeague(data.PD))
+      setSa(addLeague(data.SA))
     }catch(error){
       console.log(error)
     }
@@ -98,13 +123,43 @@ function MainApp() {
     getData(getDate(date))
   }, []);
 
-  useEffect(() => {
-    if (matches.filter((i) => getDate(i.date) === getDate(date)).length === 0) {
-      setFlip(false);
-    } else {
-      setFlip(true);
+  function renderLeague(leagueLogo,matches,width,height,backgroundColor='teal'){
+    return(
+      <View style={styles.leagueTable}>
+      <View style={{alignItems:'center',backgroundColor:'#5EA152',borderTopLeftRadius: 15, borderTopRightRadius: 15 }}>
+        <Image source={{uri:leagueLogo}} style={{width:40,height: 40,marginBottom:5,marginTop:5}}/>
+      </View>
+      {matches.filter((i) => getDate(i.date) === getDate(date)).map((i) => (
+        <TouchableOpacity key={i.id} style={styles.matchCard}>
+          <View style={styles.matchTopView}>
+            <Text style={styles.matchTime}>
+              {getDate(i.date, true)}
+            </Text>
+          </View>
+          <View style={styles.matchBotView}>
+            <View style={styles.matchHome}>
+              <Text style={styles.teamName}>
+                {i.homeTeam}  {
+                  i.homeTeamIco.endsWith('.svg') ? (<SvgUri width="20" height="20" uri={i.homeTeamIco} />) : (<Image source={{ uri: i.homeTeamIco }} style={styles.teamLogo} />)
+                }
+              </Text>
+            </View>
+            <Text style={styles.matchScore}>{scoreFlip ? i.score : '     '}</Text>
+            <View style={styles.matchAway}>
+              <Text style={styles.teamName}>
+                {
+                  i.awayTeamIco.endsWith('.svg') ? (<SvgUri width="20" height="20" uri={i.awayTeamIco} />) : (<Image source={{ uri: i.awayTeamIco }} style={styles.teamLogo} />)
+                } {i.awayTeam}
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      ))
     }
-  }, [matches, date]);
+    <Text style={{ ...styles.noMatches, display: matches.filter((i) => getDate(i.date) === getDate(date)).length === 0 ? '' : "none" }}>No matches today.</Text>
+      </View>
+    )
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "right", "left"]}>
@@ -139,34 +194,11 @@ function MainApp() {
           onHandlerStateChange={onSwipeGestureStateChange}
         >
           <ScrollView style={styles.main}>
-            {matches.filter((i) => getDate(i.date) === getDate(date)).map((i) => (
-              <TouchableOpacity key={i.id} style={styles.matchCard}>
-                <View style={styles.matchTopView}>
-                  <Text style={styles.matchTime}>
-                    {getDate(i.date, true)}
-                  </Text>
-                </View>
-                <View style={styles.matchBotView}>
-                  <View style={styles.matchHome}>
-                    <Text style={styles.teamName}>
-                      {i.homeTeam}  {
-                        i.homeTeamIco.endsWith('.svg') ? (<SvgUri width="20" height="20" uri={i.homeTeamIco} />) : (<Image source={{ uri: i.homeTeamIco }} style={styles.teamLogo} />)
-                      }
-                    </Text>
-                  </View>
-                  <Text style={styles.matchScore}>{scoreFlip ? i.score : '     '}</Text>
-                  <View style={styles.matchAway}>
-                    <Text style={styles.teamName}>
-                      {
-                        i.awayTeamIco.endsWith('.svg') ? (<SvgUri width="20" height="20" uri={i.awayTeamIco} />) : (<Image source={{ uri: i.awayTeamIco }} style={styles.teamLogo} />)
-                      } {i.awayTeam}
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))
-            }
-            <Text style={{ ...styles.noMatches, display: flip ? 'none' : "" }}>No matches today.</Text>
+          {renderLeague(plLogo,pl,100,45,'skyblue')}
+          {renderLeague(pdLogo,pd,150,45,'white')}
+          {renderLeague(blLogo,bl,150,45,'white')}
+          {renderLeague(saLogo,sa,170,45,'white')}
+          {renderLeague(fl1Logo,fl1,100,45,'skyblue')}
           </ScrollView>
         </PanGestureHandler>
       </GestureHandlerRootView>
@@ -203,7 +235,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   title: {
-    color: 'teal',
+    color: '#5EA152',
     fontSize: 30,
     fontWeight: 'bold',
   },
@@ -259,7 +291,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 20,
     color: '#A0A0A0',
-    marginTop: 60,
+    marginTop: 30,
   },
   dateText: {
     fontSize: 18,
@@ -272,7 +304,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     padding: 10,
     height:30,
-    backgroundColor:'teal',
+    backgroundColor:'#5EA152',
     alignContent:'center',
     justifyContent:'center',
     borderRadius: 25,
@@ -280,6 +312,12 @@ const styles = StyleSheet.create({
   },
   scoreOnOffText: {
     fontSize: 10,
-    color: '#A0A0A0',
+    color: 'white',
+  },
+  leagueTable: {
+    marginBottom: 30,
+    // marginBottom: 15,
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#5EA152'
   }
 });
