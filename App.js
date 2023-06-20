@@ -107,7 +107,7 @@ function MainApp() {
 
   async function getData() {
     try{
-      const response = await axios.get('http://192.168.0.12:8080/api/all');
+      const response = await axios.get('http://35.211.105.95/api/all');
       const data = response.data
       setPl(addLeague(data.PL))
       setBl(addLeague(data.BL))
