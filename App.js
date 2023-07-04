@@ -1,10 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect, useRef} from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView,ImageBackground} from 'react-native';
+import { 
+  StyleSheet, Text, View, TouchableOpacity, Image, ScrollView,ImageBackground,Modal, TouchableWithoutFeedback
+} from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SvgUri } from 'react-native-svg';
 import axios from 'axios';
+import {Calendar} from 'react-native-calendars';
 
 
 function MainApp() {
@@ -23,6 +26,12 @@ function MainApp() {
   const [sa,setSa] = useState([])
   const [scoreFlip, setScoreFlip] = useState(false)
   const [swipeHandled, setSwipeHandled] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const toggleModal = () => {
+    setModalVisible(!modalVisible);
+  };
+
 
 
   const lastDragX = useRef(0);
@@ -110,7 +119,7 @@ function MainApp() {
       const response = await axios.get('http://35.211.166.163/api/all');
       const data = response.data
       setPl(addLeague(data.PL))
-      setBl(addLeague(data.BL))
+      setBl(addLeague(data.BL1))
       setFl1(addLeague(data.FL1))
       setPd(addLeague(data.PD))
       setSa(addLeague(data.SA))
@@ -180,7 +189,7 @@ function MainApp() {
           <TouchableOpacity style={styles.dateTouch} onPress={()=>setDate(date - dayUnicord)}>
             <Text style={styles.dateText}>{getDate(date - dayUnicord).replace(/^[^-]+-(\d{2}-\d{2})$/, '$1')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={{...styles.dateTouch}}>
+          <TouchableOpacity style={{...styles.dateTouch}} onPress={toggleModal}>
           <ImageBackground
         style={{height:35,width:35}}
         resizeMode="cover"
@@ -195,6 +204,40 @@ function MainApp() {
           </TouchableOpacity>
         </View>
       </View>
+      <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={toggleModal}
+        >
+          <TouchableWithoutFeedback onPress={toggleModal}>
+            <View style={styles.modalBackground}>
+              <TouchableWithoutFeedback>
+                <View style={styles.modalContainer}>
+                  <Calendar
+                    style={styles.calendar}
+                    current={new Date(date)}
+                    onDayPress={i=>{
+                      setDate(i.timestamp)
+                      toggleModal()
+                    }}
+                    markedDates={{
+                      [getDate(date, false)]: {
+                        selected: true,
+                        selectedColor: "#5EA152",
+                      },
+                    }}
+                    theme={{
+                      todayTextColor: "#5EA152",
+                      selectedDayBackgroundColor: "#5EA152",
+                    }}
+                    // monthFormat={'yyyy-M'}
+                  />
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+      </Modal>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <PanGestureHandler
           onGestureEvent={onSwipeGesture}
@@ -327,5 +370,21 @@ const styles = StyleSheet.create({
     // marginBottom: 15,
     // borderBottomWidth: 1,
     // borderBottomColor: '#5EA152'
-  }
+  },
+   modalBackground: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+    },
+    modalContainer: {
+      backgroundColor: 'white',
+      borderRadius: 10,
+      paddingHorizontal: 20,
+      paddingVertical: 15,
+      width: '100%',
+      height: '50%',
+    },
+    calendar: {
+      borderRadius: 10,
+    },
 });
