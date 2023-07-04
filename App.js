@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect, useRef} from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView} from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView,ImageBackground} from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SvgUri } from 'react-native-svg';
@@ -107,7 +107,7 @@ function MainApp() {
 
   async function getData() {
     try{
-      const response = await axios.get('http://35.211.105.95/api/all');
+      const response = await axios.get('http://35.211.166.163/api/all');
       const data = response.data
       setPl(addLeague(data.PL))
       setBl(addLeague(data.BL))
@@ -180,8 +180,15 @@ function MainApp() {
           <TouchableOpacity style={styles.dateTouch} onPress={()=>setDate(date - dayUnicord)}>
             <Text style={styles.dateText}>{getDate(date - dayUnicord).replace(/^[^-]+-(\d{2}-\d{2})$/, '$1')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.dateTouch}>
-            <Text style={{...styles.dateText,color:'white'}}>{getDate(date).replace(/^[^-]+-(\d{2}-\d{2})$/, '$1')}</Text>
+          <TouchableOpacity style={{...styles.dateTouch}}>
+          <ImageBackground
+        style={{height:35,width:35}}
+        resizeMode="cover"
+        source={require('./assets/calPlaneSmall.png')}
+      >
+            <Text></Text>
+            <Text style={{...styles.dateText,color:'white',textAlign:'center'}}>{getDate(date).slice(-2)}</Text>
+            </ImageBackground>
           </TouchableOpacity>
           <TouchableOpacity style={styles.dateTouch} onPress={()=>setDate(date + dayUnicord)}>
             <Text style={styles.dateText}>{getDate(date + dayUnicord).replace(/^[^-]+-(\d{2}-\d{2})$/, '$1')}</Text>
@@ -298,6 +305,7 @@ const styles = StyleSheet.create({
     color: '#A0A0A0',
   },
   dateTouch: {
+    // width:75,
     padding: 15,
   },
   scoreOnOff: {
