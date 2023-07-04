@@ -165,7 +165,7 @@ function MainApp() {
         </TouchableOpacity>
       ))
     }
-    <Text style={{ ...styles.noMatches, display: matches.filter((i) => getDate(i.date) === getDate(date)).length === 0 ? '' : "none" }}>No matches today.</Text>
+    <Text style={{ ...styles.noMatches, display: matches.filter((i) => getDate(i.date) === getDate(date)).length === 0 ? 'flex' : "none" }}>No matches today.</Text>
       </View>
     )
   }
@@ -216,7 +216,7 @@ function MainApp() {
                 <View style={styles.modalContainer}>
                   <Calendar
                     style={styles.calendar}
-                    current={new Date(date)}
+                    current={new Date(date).toISOString().substring(0, 10)}
                     onDayPress={i=>{
                       setDate(i.timestamp)
                       toggleModal()
