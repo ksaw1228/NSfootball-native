@@ -1,10 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState, useEffect, useRef} from 'react';
+import React, { useState, useEffect} from 'react';
 import { 
   StyleSheet, Text, View, TouchableOpacity, Image, ScrollView,ImageBackground,Modal, TouchableWithoutFeedback
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
-import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { GestureHandlerRootView,FlingGestureHandler,Directions, } from 'react-native-gesture-handler';
 import { SvgUri } from 'react-native-svg';
 import axios from 'axios';
 import {Calendar} from 'react-native-calendars';
@@ -25,38 +25,10 @@ function MainApp() {
   const [pd,setPd] = useState([])
   const [sa,setSa] = useState([])
   const [scoreFlip, setScoreFlip] = useState(false)
-  const [swipeHandled, setSwipeHandled] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
   const toggleModal = () => {
     setModalVisible(!modalVisible);
-  };
-
-
-
-  const lastDragX = useRef(0);
-
-  const onSwipeGesture = (event) => {
-    const { translationX } = event.nativeEvent;
-  
-    if (!swipeHandled) {
-      if (translationX - lastDragX.current > 50) {
-        onSwipeRight();
-        lastDragX.current = translationX;
-        setSwipeHandled(true);
-      } else if (translationX - lastDragX.current < -50) {
-        onSwipeLeft();
-        lastDragX.current = translationX;
-        setSwipeHandled(true);
-      }
-    }
-  };
-  
-  const onSwipeGestureStateChange = (event) => {
-    if (event.nativeEvent.oldState === 4) {
-      lastDragX.current = 0;
-      setSwipeHandled(false);
-    }
   };
 
   const onSwipeLeft = () => {
@@ -132,7 +104,7 @@ function MainApp() {
     getData(getDate(date))
   }, []);
 
-  function renderLeague(leagueLogo,matches,width,height,backgroundColor='teal'){
+  function renderLeague(leagueLogo,matches){
     return(
       <View style={styles.leagueTable}>
       <View style={{alignItems:'center',backgroundColor:'#5EA152',borderTopLeftRadius: 15, borderTopRightRadius: 15 }}>
@@ -239,19 +211,28 @@ function MainApp() {
           </TouchableWithoutFeedback>
       </Modal>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <PanGestureHandler
-          onGestureEvent={onSwipeGesture}
-          onHandlerStateChange={onSwipeGestureStateChange}
-        >
-          <ScrollView style={styles.main}>
-          {renderLeague(plLogo,pl,100,45,'skyblue')}
-          {renderLeague(pdLogo,pd,150,45,'white')}
-          {renderLeague(blLogo,bl,150,45,'white')}
-          {renderLeague(saLogo,sa,170,45,'white')}
-          {renderLeague(fl1Logo,fl1,100,45,'skyblue')}
+      <FlingGestureHandler
+      direction={Directions.RIGHT}
+      onHandlerStateChange={({ nativeEvent }) => {
+        if (nativeEvent.state === 4) onSwipeRight();
+      }}
+    >
+      <FlingGestureHandler
+        direction={Directions.LEFT}
+        onHandlerStateChange={({ nativeEvent }) => {
+          if (nativeEvent.state === 4)  onSwipeLeft();
+        }}
+      >
+          <ScrollView style={styles.main} ref={(ref) => (this.scrollview = ref)} id={"scrollview"} nestedScrollEnabled={true}>
+          {renderLeague(plLogo,pl)}
+          {renderLeague(pdLogo,pd)}
+          {renderLeague(blLogo,bl)}
+          {renderLeague(saLogo,sa)}
+          {renderLeague(fl1Logo,fl1)}
           </ScrollView>
-        </PanGestureHandler>
-      </GestureHandlerRootView>
+      </FlingGestureHandler>
+    </FlingGestureHandler>
+    </GestureHandlerRootView>
       <StatusBar style='auto' />
     </SafeAreaView>
 
@@ -348,7 +329,6 @@ const styles = StyleSheet.create({
     color: '#A0A0A0',
   },
   dateTouch: {
-    // width:75,
     padding: 15,
   },
   scoreOnOff: {
@@ -367,9 +347,6 @@ const styles = StyleSheet.create({
   },
   leagueTable: {
     marginBottom: 30,
-    // marginBottom: 15,
-    // borderBottomWidth: 1,
-    // borderBottomColor: '#5EA152'
   },
    modalBackground: {
       flex: 1,
