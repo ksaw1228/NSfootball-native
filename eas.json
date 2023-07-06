@@ -13,6 +13,12 @@
     "production": {}
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios" : {
+        "appleId" :"dnals528@naver.com",
+        "ascAppId":"6450972353",
+        "appleTeamId":"J8828PHJUN"
+      }
+    }
   }
 }

@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "NSfootball",
-    "slug": "NoneScorefootball",
-    "version": "1.0.0",
+    "slug": "NSfootball",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -15,8 +15,9 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "NSfootball"
+      "supportsTablet": false,
+      "bundleIdentifier": "NSfootball",
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
@@ -29,7 +30,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "8b918405-1fe3-41cc-aef5-797a6571552e"
+        "projectId": "f5f261a3-8028-441c-ae92-0e053532ed93"
       }
     }
   }
