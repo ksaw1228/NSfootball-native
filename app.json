@@ -2,7 +2,7 @@
   "expo": {
     "name": "NSfootball",
     "slug": "NSfootball",
-    "version": "1.1.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -24,7 +24,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.dnals528.NSfootball"
+      "package": "com.dnals528.NSfootball",
+      "versionCode" : 2
     },
     "web": {
       "favicon": "./assets/favicon.png"
